@@ -1,16 +1,27 @@
 package bowling;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Cette classe a pour but d'enregistrer le nombre de quilles abattues lors des
  * lancers successifs d'<b>un seul et même</b> joueur, et de calculer le score
  * final de ce joueur
  */
 public class PartieMonoJoueur {
+	private final List<Tour> tours; 
+	private int tourCourant; 
 
 	/**
 	 * Constructeur
 	 */
 	public PartieMonoJoueur() {
+		this.tours = new ArrayList<>();
+		for (int i = 0; i < 10; i++) {
+			tours.add(new Tour(i + 1));
+		}
+		this.tourCourant = 1;
+		
 	}
 
 	/**
@@ -21,7 +32,18 @@ public class PartieMonoJoueur {
 	 * @return vrai si le joueur doit lancer à nouveau pour continuer son tour, faux sinon	
 	 */
 	public boolean enregistreLancer(int nombreDeQuillesAbattues) {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+		if (estTerminee()) {
+			throw new IllegalStateException("La partie est terminée.");
+		}
+
+		Tour tour = tours.get(tourCourant - 1);
+		boolean tourContinue = tour.ajouterLancer(nombreDeQuillesAbattues);
+
+		if (!tourContinue && tourCourant < 10) {
+			tourCourant++;
+		}
+
+		return tourContinue;
 	}
 
 	/**
@@ -31,14 +53,23 @@ public class PartieMonoJoueur {
 	 * @return Le score du joueur
 	 */
 	public int score() {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+
+		int scoreTotal = 0;
+		for (int i = 0; i < tours.size(); i++) {
+			Tour tour = tours.get(i);
+			Tour tourSuivant = (i + 1 < tours.size()) ? tours.get(i + 1) : null;
+			Tour tourSuivantSuivant = (i + 2 < tours.size()) ? tours.get(i + 2) : null;
+			scoreTotal += tour.calculerScore(tourSuivant, tourSuivantSuivant);
+		}
+		return scoreTotal;
 	}
 
 	/**
 	 * @return vrai si la partie est terminée pour ce joueur, faux sinon
 	 */
 	public boolean estTerminee() {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+
+		return tourCourant > 10 || (tourCourant == 10 && tours.get(9).estTermine());
 	}
 
 
@@ -46,7 +77,7 @@ public class PartieMonoJoueur {
 	 * @return Le numéro du tour courant [1..10], ou 0 si le jeu est fini
 	 */
 	public int numeroTourCourant() {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+		return estTerminee() ? 0 : tourCourant;
 	}
 
 	/**
@@ -54,7 +85,11 @@ public class PartieMonoJoueur {
 	 *         est fini
 	 */
 	public int numeroProchainLancer() {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+
+		if (estTerminee()) {
+			return 0;
+		}
+		return tours.get(tourCourant - 1).getNumeroProchainLancer();
+	}
 	}
 
-}
